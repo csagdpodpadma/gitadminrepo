@@ -1,26 +1,41 @@
 ---
-name: Lint Code Base
+name: Lint and Comment on PR
 
 on:
-  push:
-    branches: [main]
   pull_request:
     branches: [main]
 
 jobs:
   lint:
-    name: Run Super-Linter
     runs-on: ubuntu-latest
 
     steps:
+      # Step 1: Checkout the code
       - name: Checkout Code
         uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
 
+      # Step 2: Run Super-Linter
       - name: Lint Code Base
+        id: super-linter
         uses: github/super-linter@v5
         env:
           VALIDATE_ALL_CODEBASE: true
           DEFAULT_BRANCH: main
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      # Step 3: Comment on PR with lint status
+      - name: Comment on PR
+        if: always() # Runs even if lint fails
+        uses: actions/github-script@v6
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const prNumber = context.payload.pull_request.number;
+            const lintStatus = '${{ job.status }}';
+            const message = `✅ Linting completed with status: **${lintStatus}**`;
+            await github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: prNumber,
+              body: message
+            });
