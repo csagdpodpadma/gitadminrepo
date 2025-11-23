@@ -34,7 +34,6 @@ jobs:
               const lintStatus = '${{ job.status }}';
               let message = `✅ Linting completed with status: **${lintStatus}**`;
 
-              // Add note if lint failed
               if (lintStatus !== 'success') {
                 message += '\n⚠️ Some issues were found during linting. Please review the logs.';
               }
@@ -45,6 +44,5 @@ jobs:
                 issue_number: prNumber,
                 body: message
               });
-            } catch (error) {
+                       } catch (error) {
               core.setFailed(`Failed to post comment: ${error.message}`);
-            }
