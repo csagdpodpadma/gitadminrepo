@@ -38,4 +38,3 @@ jobs:
               repo: context.repo.repo,
               issue_number: prNumber,
               body: message
-            });
