@@ -1,14 +1,50 @@
-name: Test Self-Hosted Runner
+name: Lint and Comment on PR
 
 on:
-  workflow_dispatch:
+  pull_request:
+    branches: [main]
 
 jobs:
-  test-job:
-    runs-on: [self-hosted, test]
+  lint:
+    runs-on: [self-hosted, windows] # Or ubuntu-latest if using GitHub-hosted runner
+
     steps:
-      - name: Show Runner Info
-        run: |
-          echo "✅ Running on self-hosted test runner"
-          echo "OS: $env:OS"
-          echo "User: $env:USERNAME"
+      # Step 1: Checkout the code
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      # Step 2: Run Super-Linter
+      - name: Lint Code Base
+        id: super-linter
+        uses: github/super-linter@v5
+        env:
+          VALIDATE_ALL_CODEBASE: true
+          DEFAULT_BRANCH: main
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      # Step 3: Comment on PR with lint status
+      - name: Comment on PR
+        if: always() # Runs even if lint fails
+        uses: actions/github-script@v6
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            try {
+              const prNumber = context.payload.pull_request.number;
+              const lintStatus = '${{ job.status }}';
+              let message = `✅ Linting completed with status: **${lintStatus}**`;
+
+              // Add note if lint failed
+              if (lintStatus !== 'success') {
+                message += '\n⚠️ Some issues were found during linting. Please review the logs.';
+              }
+
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: prNumber,
+                body: message
+              });
+            } catch (error) {
+              core.setFailed(`Failed to post comment: ${error.message}`);
+            }
