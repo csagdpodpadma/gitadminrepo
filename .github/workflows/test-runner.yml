@@ -1,0 +1,14 @@
+name: Test Self-Hosted Runner
+
+on:
+  workflow_dispatch:
+
+jobs:
+  test-job:
+    runs-on: [self-hosted, test]
+    steps:
+      - name: Show Runner Info
+        run: |
+          echo "✅ Running on self-hosted test runner"
+          echo "OS: $env:OS"
+          echo "User: $env:USERNAME"
