@@ -1,38 +1,54 @@
-name: Lint on Self-Hosted Runner
+name: Lint and Comment on PR (Self-Hosted)
 
 on:
-  workflow_dispatch: # Manual trigger for demo
   pull_request:
     branches: [main]
 
 jobs:
   lint:
-    runs-on: [self-hosted, Windows, X64] # Matches your runner labels
+    runs-on: [self-hosted, Windows, X64] # Use your self-hosted runner labels
+
     steps:
       # Step 1: Show runner info
       - name: Display Runner Details
         run: |
-          echo "✅ Running on self-hosted runner"
-          echo "Runner Name: GirAdmin_selfhosted"
+          echo "✅ Running on self-hosted Windows runner"
           echo "OS: $env:OS"
           echo "User: $env:USERNAME"
           echo "Working Directory: $(Get-Location)"
 
-      # Step 2: Checkout repository
+      # Step 2: Checkout the code
       - name: Checkout Code
         uses: actions/checkout@v4
 
-      # Step 3: Run a simple lint simulation (Windows-friendly)
+      # Step 3: Simulate Lint (Windows-friendly)
       - name: Simulate Lint
         run: |
           echo "Running lint checks..."
           Start-Sleep -Seconds 2
           echo "✅ Lint completed successfully!"
 
-      # Step 4: List      # Step 4: List files
-      - name: List Files
-        run: dir
+      # Step 4: Comment on PR with lint status
+      - name: Comment on PR
+        if: always() # Runs even if lint fails
+        uses: actions/github-script@v6
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            try {
+              const prNumber = context.payload.pull_request.number;
+              const lintStatus = '${{ job.status }}';
+              let message = `✅ Linting completed with status: **${lintStatus}**`;
 
-      # Step 5: Post success message
-      - name: Confirm Workflow
-        run: |
+              if (lintStatus !== 'success') {
+                message += '\n⚠️ Some issues were found during linting. Please review the logs.';
+              }
+
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: prNumber,
+                body: message
+              });
+            }            } catch (error) {
+              core.setFailed(`Failed to post comment: ${error.message}`);
