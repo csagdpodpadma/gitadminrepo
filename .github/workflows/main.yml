@@ -1,37 +1,38 @@
 
-name: Windows Self-Hosted Runner Fix
+name: Lint Code Base
 
 on:
-  workflow_dispatch: # Allows manual trigger
   push:
-    branches: [ main ]
+    branches: [main]
+  pull_request:
+    branches: [main]
 
 jobs:
-  run-on-windows:
+  lint:
+    name: Run Super-Linter
     runs-on: self-hosted
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
 
-      # ✅ Fix PowerShell Execution Policy
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
       - name: Set Execution Policy
         run: |
           Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass -Force
         shell: powershell
 
-      # ✅ Example command after fixing policy
-      - name: Test Runner
-        run: |
-          echo "✅ Running on self-hosted runner"
+      - name: Verify Docker
+        run: docker --version
         shell: powershell
 
-      # ✅ Optional: Run your actual build/test      # ✅ Optional: Run your actual build/test steps
-      - name: Node.js Setup
-        uses: actions/setup-node@v4
-        with:
-          node-version: '22'
-
-      - name: Install Dependencies
-        run: npm install
-
-      - name: Run App
+      - name: Lint Code Base
+        run: |
+          docker run `
+            -e VALIDATE_ALL_CODEBASE=true `
+            -e DEFAULT_BRANCH=main `
+            -e GITHUB_TOKEN=${{ secrets.GITHUB_TOKEN }} `
+            -v "${{ github.workspace }}:/tmp/lint" `
+            github/super-linter:slim-v5
+        shell: powershell
