@@ -1,35 +1,37 @@
 
-name: "CodeQL Analysis"
+name: Windows Self-Hosted Runner Fix
 
 on:
+  workflow_dispatch: # Allows manual trigger
   push:
     branches: [ main ]
-  pull_request:
-    branches: [ main ]
-  schedule:
-    - cron: '0 0 * * 0' # Weekly scan
 
 jobs:
-  analyze:
-    name: Analyze
-    runs-on: GirAdmin_selfhosted
-    permissions:
-      actions: read
-      contents: read
-      security-events: write
-
-    strategy:
-      fail-fast: false
-      matrix:
-        language: [ 'javascript', 'python' ] # Add your languages
-
+  run-on-windows:
+    runs-on: self-hosted
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Initialize CodeQL
-        uses: github/codeql-action/init@v3
-        with:
-          languages: ${{ matrix.language }}
+      # ✅ Fix PowerShell Execution Policy
+      - name: Set Execution Policy
+        run: |
+          Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass -Force
+        shell: powershell
 
-      - name: Perform CodeQL Analysis
+      # ✅ Example command after fixing policy
+      - name: Test Runner
+        run: |
+          echo "✅ Running on self-hosted runner"
+        shell: powershell
+
+      # ✅ Optional: Run your actual build/test      # ✅ Optional: Run your actual build/test steps
+      - name: Node.js Setup
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Install Dependencies
+        run: npm install
+
+      - name: Run App
