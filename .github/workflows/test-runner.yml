@@ -1,38 +1,37 @@
-name: Lint on Self-Hosted Runner
+
+name: Windows Self-Hosted Runner Fix
 
 on:
-  workflow_dispatch: # Manual trigger for demo
-  pull_request:
-    branches: [main]
+  workflow_dispatch: # Allows manual trigger
+  push:
+    branches: [ main ]
 
 jobs:
-  lint:
-    runs-on: [self-hosted, Windows, X64] # Matches your runner labels
+  run-on-windows:
+    runs-on: self-hosted
     steps:
-      # Step 1: Show runner info
-      - name: Display Runner Details
-        run: |
-          echo "✅ Running on self-hosted runner"
-          echo "Runner Name: GirAdmin_selfhosted"
-          echo "OS: $env:OS"
-          echo "User: $env:USERNAME"
-          echo "Working Directory: $(Get-Location)"
-
-      # Step 2: Checkout repository
-      - name: Checkout Code
+      - name: Checkout repository
         uses: actions/checkout@v4
 
-      # Step 3: Run a simple lint simulation (Windows-friendly)
-      - name: Simulate Lint
+      # ✅ Fix PowerShell Execution Policy
+      - name: Set Execution Policy
         run: |
-          echo "Running lint checks..."
-          Start-Sleep -Seconds 2
-          echo "✅ Lint completed successfully!"
+          Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass -Force
+        shell: powershell
 
-      # Step 4: List      # Step 4: List files
-      - name: List Files
-        run: dir
-
-      # Step 5: Post success message
-      - name: Confirm Workflow
+      # ✅ Example command after fixing policy
+      - name: Test Runner
         run: |
+          echo "✅ Running on self-hosted runner"
+        shell: powershell
+
+      # ✅ Optional: Run your actual build/test      # ✅ Optional: Run your actual build/test steps
+      - name: Node.js Setup
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Install Dependencies
+        run: npm install
+
+      - name: Run App
