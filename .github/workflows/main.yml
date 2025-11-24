@@ -4,7 +4,7 @@ name: Windows Self-Hosted Runner Test
 on:
   workflow_dispatch: # Manual trigger for testing
   push:
-    branches: [main] # push on main branch
+    branches: [main] # push on main branch created new webhook
 
 jobs:
   build:
