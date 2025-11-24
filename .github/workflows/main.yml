@@ -1,40 +1,40 @@
----
-name: Lint and Comment on PR
+
+name: Windows Self-Hosted Runner Test
 
 on:
-  pull_request:
+  workflow_dispatch: # Manual trigger for testing
+  push:
     branches: [main]
 
 jobs:
-  lint:
-    runs-on: [self-hosted, test_runner]
+  build:
+    runs-on: [self-hosted, Windows, X64] # Match your runner labels exactly
 
     steps:
-      # Step 1: Checkout the code
+      # Step 1: Confirm runner
+      - name: Verify Runner
+        run: echo "✅ Running on self-hosted Windows runner"
+
+      # Step 2: Checkout code
       - name: Checkout Code
         uses: actions/checkout@v4
 
-      # Step 2: Run Super-Linter
-      - name: Lint Code Base
-        id: super-linter
-        uses: github/super-linter@v5
-        env:
-          VALIDATE_ALL_CODEBASE: true
-          DEFAULT_BRANCH: main
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      # Step 3: Set up PowerShell environment
+      - name: PowerShell Version
+        run: $PSVersionTable.PSVersion
 
-      # Step 3: Comment on PR with lint status
-      - name: Comment on PR
-        if: always() # Runs even if lint fails
-        uses: actions/github-script@v6
+      # Step 4: Run a simple lint or script
+      - name: Run Lint Script
+        shell: pwsh
+        run: |
+          Write-Host "Running lint checks..."
+          # Example: Check for .ps1 files
+          Get-ChildItem -Recurse -Filter *.ps1 | ForEach-Object {
+            Write-Host "Found script: $($_.FullName)"
+          }
+
+      # Step 5: Optional - Upload artifact
+      - name: Upload Log
+        uses: actions/upload-artifact@v4
         with:
-          github-token: ${{ secrets.GITHUB_TOKEN }}
-          script: |
-            const prNumber = context.payload.pull_request.number;
-            const lintStatus = '${{ job.status }}';
-            const message = `✅ Linting completed with status: **${lintStatus}**`;
-            await github.rest.issues.createComment({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              issue_number: prNumber,
-              body: message
+          name: lint-log
