@@ -33,3 +33,7 @@ jobs:
           languages: ${{ matrix.language }}
 
       - name: Perform CodeQL Analysis
+      - name: CodeQL and Dependabot Report Action
+        uses: rsdmike/github-security-report-action@v3.0.4
+      - name: secret-scanning-custom-action
+        uses: advanced-security/secret-scanning-tools@v1  
