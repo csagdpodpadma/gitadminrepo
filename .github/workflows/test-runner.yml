@@ -7,7 +7,7 @@ on:
 
 jobs:
   lint:
-    runs-on: [self-hosted, Windows, X64] # Matches your runner labels
+    runs-on: ubuntu-latest # Matches your runner labels
     steps:
       # Step 1: Show runner info
       - name: Display Runner Details
