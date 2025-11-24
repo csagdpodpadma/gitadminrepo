@@ -1,38 +1,26 @@
 
-name: Lint Code Base
+name: Self-Hosted Runner Demo
 
 on:
   push:
-    branches: [main]
-  pull_request:
-    branches: [main]
+    branches:
+      - main
 
 jobs:
-  lint:
-    name: Run Super-Linter
-    runs-on: self-hosted
-
+  build:
+    runs-on: [self-hosted, Windows, X64]  # Targets your self-hosted Windows runner
     steps:
-      - name: Checkout Code
+      - name: Checkout repository
         uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
 
-      - name: Set Execution Policy
+      - name: Display runner info
         run: |
-          Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass -Force
-        shell: powershell
+          echo "Running on self-hosted Windows x64"
+          echo "Current directory: $(pwd)"
+          echo "Node version:"
+          node --version
 
-      - name: Verify Docker
-        run: docker --version
-        shell: powershell
-
-      - name: Lint Code Base
+      - name: Simple script
         run: |
-          docker run `
-            -e VALIDATE_ALL_CODEBASE=true `
-            -e DEFAULT_BRANCH=main `
-            -e GITHUB_TOKEN=${{ secrets.GITHUB_TOKEN }} `
-            -v "${{ github.workspace }}:/tmp/lint" `
-            github/super-linter:slim-v5
-        shell: powershell
+          echo "Hello from self-hosted runner!"
+
