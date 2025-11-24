@@ -2,25 +2,14 @@
 name: Self-Hosted Runner Demo
 
 on:
-  push:
-    branches:
-      - main
+  workflow_dispatch:  # Allows manual trigger
 
 jobs:
-  build:
-    runs-on: [self-hosted, Windows, X64]  # Targets your self-hosted Windows runner
+  test:
+    runs-on: [self-hosted, Windows, X64]
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-
-      - name: Display runner info
-        run: |
-          echo "Running on self-hosted Windows x64"
-          echo "Current directory: $(pwd)"
-          echo "Node version:"
-          node --version
-
-      - name: Simple script
+      - name: Print environment info
         run: |
           echo "Hello from self-hosted runner!"
-
+          echo "Current          echo "Current directory: $(pwd)"
+          echo "Node version:"
