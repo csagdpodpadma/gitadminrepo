@@ -1,40 +1,37 @@
 
-name: Windows Self-Hosted Runner Test
+name: Windows Self-Hosted Runner Fix
 
 on:
-  workflow_dispatch: # Manual trigger for testing
+  workflow_dispatch: # Allows manual trigger
   push:
-    branches: [main] # push on main branch
+    branches: [ main ]
 
 jobs:
-  build:
-    runs-on: [self-hosted, Windows, X64] # Match your runner labels exactly
-
+  run-on-windows:
+    runs-on: self-hosted
     steps:
-      # Step 1: Confirm runner
-      - name: Verify Runner
-        run: echo "✅ Running on self-hosted Windows runner"
-
-      # Step 2: Checkout code
-      - name: Checkout Code
+      - name: Checkout repository
         uses: actions/checkout@v4
 
-      # Step 3: Set up PowerShell environment
-      - name: PowerShell Version
-        run: $PSVersionTable.PSVersion
-
-      # Step 4: Run a simple lint or script
-      - name: Run Lint Script
-        shell: pwsh
+      # ✅ Fix PowerShell Execution Policy
+      - name: Set Execution Policy
         run: |
-          Write-Host "Running lint checks..."
-          # Example: Check for .ps1 files
-          Get-ChildItem -Recurse -Filter *.ps1 | ForEach-Object {
-            Write-Host "Found script: $($_.FullName)"
-          }
+          Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass -Force
+        shell: powershell
 
-      # Step 5: Optional - Upload artifact
-      - name: Upload Log
-        uses: actions/upload-artifact@v4
+      # ✅ Example command after fixing policy
+      - name: Test Runner
+        run: |
+          echo "✅ Running on self-hosted runner"
+        shell: powershell
+
+      # ✅ Optional: Run your actual build/test      # ✅ Optional: Run your actual build/test steps
+      - name: Node.js Setup
+        uses: actions/setup-node@v4
         with:
-          name: lint-log
+          node-version: '22'
+
+      - name: Install Dependencies
+        run: npm install
+
+      - name: Run App
