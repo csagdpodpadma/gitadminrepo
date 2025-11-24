@@ -7,7 +7,7 @@ on:
 
 jobs:
   lint:
-    runs-on: [self-hosted, test_runner]
+    runs-on: [self-hosted, GirAdmin_selfhosted]
 
     steps:
       # Step 1: Checkout the code
