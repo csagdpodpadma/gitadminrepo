@@ -58,7 +58,7 @@ Shellecho "" >> src/sample.pygit add src/sample.pygit commit -m "Fix lint issue"
 
 Show successful run.
 
-
+Branching Rules are set for all the branches.
 📈 Bonus
 
 Add a status badge in README (already included).
