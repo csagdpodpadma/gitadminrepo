@@ -1,40 +1,35 @@
 
-name: Windows Self-Hosted Runner Test
+name: "CodeQL Analysis"
 
 on:
-  workflow_dispatch: # Manual trigger for testing
   push:
-    branches: [main] # push on main branch
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+  schedule:
+    - cron: '0 0 * * 0' # Weekly scan
 
 jobs:
-  build:
-    runs-on: [self-hosted, Windows, X64] # Match your runner labels exactly
+  analyze:
+    name: Analyze
+    runs-on: ubuntu-latest
+    permissions:
+      actions: read
+      contents: read
+      security-events: write
+
+    strategy:
+      fail-fast: false
+      matrix:
+        language: [ 'javascript', 'python' ] # Add your languages
 
     steps:
-      # Step 1: Confirm runner
-      - name: Verify Runner
-        run: echo "✅ Running on self-hosted Windows runner"
-
-      # Step 2: Checkout code
-      - name: Checkout Code
+      - name: Checkout repository
         uses: actions/checkout@v4
 
-      # Step 3: Set up PowerShell environment
-      - name: PowerShell Version
-        run: $PSVersionTable.PSVersion
-
-      # Step 4: Run a simple lint or script
-      - name: Run Lint Script
-        shell: pwsh
-        run: |
-          Write-Host "Running lint checks..."
-          # Example: Check for .ps1 files
-          Get-ChildItem -Recurse -Filter *.ps1 | ForEach-Object {
-            Write-Host "Found script: $($_.FullName)"
-          }
-
-      # Step 5: Optional - Upload artifact
-      - name: Upload Log
-        uses: actions/upload-artifact@v4
+      - name: Initialize CodeQL
+        uses: github/codeql-action/init@v3
         with:
-          name: lint-log
+          languages: ${{ matrix.language }}
+
+      - name: Perform CodeQL Analysis
